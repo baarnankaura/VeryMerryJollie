@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+<title>JollieShop</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+ --blue:#1463d8;--dark:#111827;--nav:#202c3b;
+ --yellow:#ffd814;--orange:#ff9900;--bg:#eaeded;
+ --card:#fff;--text:#111827;--muted:#667085;--border:#ddd
+}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);transition:.2s}
+body.dark{--bg:#0d1522;--card:#182234;--text:#f5f7fa;--muted:#b7c1d0;--border:#344054}
+button,input,select{font:inherit}
+button{cursor:pointer}
+header{
+ background:var(--dark);color:white;padding:12px 4%;min-height:70px;
+ display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:1000
+}
+.logo{font-size:27px;font-weight:bold;color:#58a6ff;white-space:nowrap;cursor:pointer}
+.search{display:flex;flex:1;max-width:700px}
+.search input{width:100%;padding:13px;border:0;outline:0}
+.search button{width:55px;border:0;background:var(--orange)}
+.headbtn{background:transparent;color:white;border:1px solid #667085;padding:10px;border-radius:6px;white-space:nowrap}
+nav{background:var(--nav);color:#fff;padding:12px 4%;display:flex;gap:25px;overflow-x:auto}
+nav span{white-space:nowrap;cursor:pointer}
+nav span:hover{text-decoration:underline}
+.hero{
+ min-height:340px;padding:45px 7%;display:flex;align-items:center;
+ background:linear-gradient(135deg,#1261d6,#55c7ff);color:#fff
+}
+.hero h1{font-size:clamp(38px,6vw,65px);margin-bottom:15px}
+.hero p{font-size:20px;margin-bottom:25px}
+.hero button{padding:14px 28px;border:0;border-radius:7px;color:#1261d6;font-weight:bold}
+.section{max-width:1400px;margin:35px auto;padding:0 25px}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.categories{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.category{
+ background:var(--card);border:1px solid var(--border);border-radius:10px;
+ padding:25px;text-align:center;transition:.2s
+}
+.category:hover{transform:translateY(-4px);box-shadow:0 7px 20px #0002}
+.category-icon{font-size:52px;margin-bottom:10px}
+.products{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.product{
+ background:var(--card);border:1px solid var(--border);border-radius:10px;
+ padding:15px;position:relative;transition:.2s
+}
+.product:hover{transform:translateY(-4px);box-shadow:0 8px 20px #0002}
+.product-image{
+ height:190px;background:#f2f4f7;border-radius:7px;
+ display:flex;align-items:center;justify-content:center;
+ overflow:hidden;margin-bottom:13px
+}
+.product-image img{width:100%;height:100%;object-fit:cover}
+.product-image .emoji{font-size:75px}
+.sale{
+ position:absolute;top:25px;left:25px;background:#e53935;color:#fff;
+ padding:5px 8px;border-radius:5px;font-size:12px;font-weight:bold
+}
+.product-category{font-size:13px;color:var(--muted)}
+.product h3{margin:7px 0}
+.rating{color:#f5a623;margin:6px 0}
+.price{font-size:22px;font-weight:bold;margin:9px 0}
+.add{width:100%;padding:11px;border:0;border-radius:20px;background:var(--yellow);font-weight:bold}.add:disabled{opacity:.55;cursor:not-allowed}
+.view{width:100%;padding:9px;margin-top:7px;border:1px solid var(--border);border-radius:20px;background:var(--card);color:var(--text)}
+.overlay{
+ display:none;position:fixed;inset:0;background:#0008;z-index:1900
+}
+.panel{
+ display:none;position:fixed;right:0;top:0;width:min(460px,100%);
+ height:100%;background:var(--card);z-index:2000;padding:25px;overflow:auto;
+ box-shadow:-5px 0 25px #0005
+}
+.close{border:0;background:transparent;color:var(--text);font-size:28px;float:right}
+.panel h2{margin-bottom:20px}
+.cart-item{
+ display:flex;gap:12px;padding:15px 0;border-bottom:1px solid var(--border)
+}
+.cart-icon{font-size:40px}
+.cart-info{flex:1}
+.qty{display:flex;gap:8px;align-items:center;margin-top:8px}
+.qty button{width:28px;height:28px}
+.panel-total{font-size:21px;font-weight:bold;margin:20px 0}
+.checkout-btn,.place{
+ width:100%;padding:14px;border:0;border-radius:7px;
+ background:var(--orange);font-weight:bold
+}
+.modal{
+ display:none;position:fixed;inset:0;background:#0008;z-index:2100;
+ align-items:center;justify-content:center;padding:20px
+}
+.modal-box{
+ width:min(600px,100%);max-height:90vh;overflow:auto;
+ background:var(--card);padding:30px;border-radius:12px
+}
+.form input,.form select{
+ width:100%;padding:12px;margin:7px 0;border:1px solid var(--border);
+ border-radius:6px;background:var(--card);color:var(--text)
+}
+.form button{width:100%;padding:12px;margin-top:8px;border:0;border-radius:6px;background:var(--blue);color:#fff}
+.checkout{
+ display:none;max-width:950px;margin:35px auto;padding:20px
+}
+.checkout-box{background:var(--card);padding:30px;border-radius:10px}
+.checkout-card{border:1px solid var(--border);padding:22px;border-radius:8px;margin-bottom:18px}
+.checkout-card h2{margin-bottom:15px}
+.row{display:flex;justify-content:space-between;margin:10px 0;gap:15px}
+.total{font-size:22px;font-weight:bold}
+.coupon{display:flex;gap:10px}
+.coupon input,.checkout input,.checkout select{
+ width:100%;padding:12px;border:1px solid var(--border);
+ border-radius:6px;background:var(--card);color:var(--text)
+}
+.coupon button{padding:0 20px;border:0;background:var(--yellow);border-radius:6px}
+.payment{display:none;margin-top:15px}
+.payment input{margin-bottom:10px}
+.cash{
+ display:none;background:#f2f4f7;color:#111;padding:15px;margin-top:15px;border-radius:7px
+}
+.product-detail{display:none;max-width:1100px;margin:35px auto;padding:20px}
+.detail-box{
+ background:var(--card);padding:30px;border-radius:12px;
+ display:grid;grid-template-columns:1fr 1fr;gap:35px
+}
+.detail-image{
+ height:400px;background:#f2f4f7;border-radius:10px;
+ display:flex;align-items:center;justify-content:center;overflow:hidden
+}
+.detail-image img{width:100%;height:100%;object-fit:cover}
+.detail-emoji{font-size:150px}
+.detail-price{font-size:32px;font-weight:bold;margin:20px 0}
+.detail-desc{color:var(--muted);line-height:1.6;margin:15px 0}
+.reviews{margin-top:25px}
+.review{border-top:1px solid var(--border);padding:15px 0}
+.admin{display:none;max-width:1100px;margin:35px auto;padding:20px}
+.admin-box{background:var(--card);padding:25px;border-radius:10px}
+.order{
+ border:1px solid var(--border);padding:15px;border-radius:7px;margin:10px 0
+}
+.toast{
+ display:none;position:fixed;bottom:25px;right:25px;background:#111827;color:#fff;
+ padding:14px 20px;border-radius:7px;z-index:3000
+}
+footer{background:var(--dark);color:#fff;text-align:center;padding:45px;margin-top:50px}
+footer b{color:#58a6ff;font-size:26px}
+@media(max-width:900px){
+ .products{grid-template-columns:repeat(2,1fr)}
+ .categories{grid-template-columns:repeat(2,1fr)}
+ header{flex-wrap:wrap}
+ .search{order:5;flex-basis:100%}
+ .detail-box{grid-template-columns:1fr}
+}
+@media(max-width:550px){
+ .products{grid-template-columns:1fr}
+ .hero h1{font-size:40px}
+ .coupon{flex-direction:column}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo" onclick="home()">JollieShop</div>
+
+ <div class="search">
+  <input id="search" placeholder="Search JollieShop..." oninput="searchProducts()">
+  <button onclick="searchProducts()">🔍</button>
+ </div>
+
+ <button class="headbtn" onclick="account()">👤 Account</button>
+ <button class="headbtn" onclick="orders()">📦 Orders</button>
+ <button class="headbtn" onclick="cartOpen()">🛒 <span id="count">0</span></button>
+ <button class="headbtn" onclick="adminLogin()">🧑‍💼 Admin</button>
+ <button class="headbtn" onclick="dark()">🌙</button>
+</header>
+
+<nav>
+ <span onclick="home()">Home</span>
+ <span onclick="category('Candy')">🍬 Candy</span>
+ <span onclick="category('Gum')">🫧 Gum</span>
+ <span onclick="category('Drinks')">🥤 Drinks</span>
+ <span onclick="category('Items')">🛍️ Items</span>
+ <span onclick="category('Snacks')">🍪 Snacks</span>
+ <span onclick="category('Clothing')">👕 Clothing</span>
+ <span onclick="category('Gaming')">🎮 Gaming</span>
+ <span onclick="category('Electronics')">📱 Electronics</span>
+ <span onclick="category('Gifts')">🎁 Gifts</span>
+ <span onclick="category('Books')">📚 Books</span>
+ <span onclick="category('Chips')">🥔 Chips</span>
+ <span onclick="category('Heavenly Sweets')">🍰 Heavenly Sweets</span>
+</nav>
+
+<section class="hero" id="home">
+ <div>
+  <h1>Everything you want.</h1>
+  <p>Shop candy, drinks, snacks, clothing, gaming, electronics and more.</p>
+  <button onclick="scrollProducts()">Shop Now →</button>
+ </div>
+</section>
+
+<section class="section">
+ <div class="section-title"><h2>Shop by Category</h2></div>
+
+ <div class="categories">
+  <div class="category" onclick="category('Candy')"><div class="category-icon">🍬</div><h3>Candy</h3></div>
+  <div class="category" onclick="category('Gum')"><div class="category-icon">🫧</div><h3>Gum</h3></div>
+  <div class="category" onclick="category('Drinks')"><div class="category-icon">🥤</div><h3>Drinks</h3></div>
+  <div class="category" onclick="category('Items')"><div class="category-icon">🛍️</div><h3>Items</h3></div>
+  <div class="category" onclick="category('Snacks')"><div class="category-icon">🍪</div><h3>Snacks</h3></div>
+  <div class="category" onclick="category('Clothing')"><div class="category-icon">👕</div><h3>Clothing</h3></div>
+  <div class="category" onclick="category('Gaming')"><div class="category-icon">🎮</div><h3>Gaming</h3></div>
+  <div class="category" onclick="category('Electronics')"><div class="category-icon">📱</div><h3>Electronics</h3></div>
+  <div class="category" onclick="category('Gifts')"><div class="category-icon">🎁</div><h3>Gifts</h3></div>
+  <div class="category" onclick="category('Books')"><div class="category-icon">📚</div><h3>Books</h3></div>
+  <div class="category" onclick="category('Chips')"><div class="category-icon">🥔</div><h3>Chips</h3></div>
+  <div class="category" onclick="category('Heavenly Sweets')"><div class="category-icon">🍰</div><h3>Heavenly Sweets</h3></div>
+ </div>
+</section>
+
+<section class="section" id="productsSection">
+ <div class="section-title">
+  <h2 id="title">Popular Products</h2>
+  <select onchange="sort(this.value)">
+   <option value="default">Sort By</option>
+   <option value="low">Price: Low → High</option>
+   <option value="high">Price: High → Low</option>
+   <option value="name">Name</option>
+  </select>
+ </div>
+ <div class="products" id="products"></div>
+</section>
+
+<!-- PRODUCT DETAIL -->
+<section class="product-detail" id="detail"></section>
+
+<!-- CHECKOUT -->
+<section class="checkout" id="checkout">
+ <div class="checkout-box">
+  <h1>Checkout</h1>
+
+  <div class="checkout-card">
+   <h2>🧑‍🎓 Checkout Information</h2>
+   <input id="name" placeholder="Your Name">
+   <br><br>
+   <input id="studentClass" placeholder="Your Class">
+   <br><br>
+   <label style="display:block;margin:8px 0;font-weight:bold;">⭐ Membership</label>
+   <select id="membership" onchange="updateCheckout()">
+    <option value="no">No membership</option>
+    <option value="yes">Yes — JollieShop Membership ($5.00)</option>
+   </select>
+   <p style="margin-top:10px;color:var(--muted);font-size:13px;">
+    Membership is added to this order for $5.00.
+   </p>
+  </div>
+
+  <div class="checkout-card">
+   <h2>🧾 Order Summary</h2>
+   <div id="checkoutItems"></div>
+   <hr>
+   <div class="row"><span>Subtotal</span><span id="sub">$0.00</span></div>
+   <div class="row"><span>Discount</span><span id="disc">$0.00</span></div>
+   <div class="row"><span id="membershipSummary">⭐ Membership: Not selected</span><span></span></div>
+   <div class="row"><span>Shipping</span><span>FREE</span></div>
+   <div class="row total"><span>Total</span><span id="total">$0.00</span></div>
+  </div>
+
+  <div class="checkout-card">
+   <h2>🎟️ Coupon</h2>
+   <div class="coupon">
+    <input id="coupon" placeholder="Enter coupon code">
+    <button onclick="coupon()">Apply</button>
+   </div>
+   <p id="couponMsg"></p>
+   <small>Try: JOLLIE10</small>
+  </div>
+
+  <div class="checkout-card">
+   <h2>💳 Payment Method</h2>
+   <select id="payment" onchange="payment()">
+    <option value="">Select payment method</option>
+    <option value="card">💳 Card</option>
+    <option value="cash">💵 Cash</option>
+   </select>
+
+   <div class="payment" id="card">
+    <input placeholder="Cardholder Name">
+    <input placeholder="Card Number">
+    <div style="display:flex;gap:10px">
+     <input placeholder="MM/YY">
+     <input placeholder="CVV">
+    </div>
+    <small>Demo only — never enter real card information here.</small>
+   </div>
+
+   <div class="cash" id="cash">
+    💵 <b>Cash selected</b>
+    <p>Your order will use the cash payment option.</p>
+   </div>
+  </div>
+
+  <button class="place" onclick="placeOrder()">Place Order</button>
+ </div>
+</section>
+
+<!-- CART -->
+<div class="overlay" id="overlay" onclick="cartClose()"></div>
+
+<div class="panel" id="cart">
+ <button class="close" onclick="cartClose()">×</button>
+ <h2>🛒 Your Cart</h2>
+ <div id="cartItems"></div>
+ <div class="panel-total">Total: <span id="cartTotal">$0.00</span></div>
+ <button class="checkout-btn" onclick="checkout()">Go to Checkout</button>
+</div>
+
+<!-- ACCOUNT MODAL -->
+<div class="modal" id="accountModal">
+ <div class="modal-box">
+  <button class="close" onclick="closeModal('accountModal')">×</button>
+  <h2>👤 Your Account</h2>
+  <br>
+  <div class="form">
+   <input id="username" placeholder="Username">
+   <input id="email" placeholder="Email">
+   <input id="password" type="password" placeholder="Password">
+   <button onclick="login()">Sign In / Create Account</button>
+  </div>
+  <br>
+  <p id="accountStatus"></p>
+ </div>
+</div>
+
+<!-- ORDERS MODAL -->
+<div class="modal" id="ordersModal">
+ <div class="modal-box">
+  <button class="close" onclick="closeModal('ordersModal')">×</button>
+  <h2>📦 Your Orders</h2>
+  <div id="orderList"></div>
+ </div>
+</div>
+
+<!-- ADMIN -->
+<section class="admin" id="admin">
+ <div class="admin-box">
+  <h1>🧑‍💼 JollieShop Admin Panel</h1>
+  <p>View orders saved in this browser. A standalone HTML file cannot provide server-side authentication or a shared database.</p>
+  <br>
+  <div id="adminOrders"></div>
+ </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+ <b>JollieShop</b>
+ <p>Shop candy, drinks, snacks, gaming, electronics and more.</p>
+ <br>
+ <p>© 2026 JollieShop</p>
+</footer>
+
+<script>
+
+const defaultProducts=[
+{id:1,name:'Diary of a Wimpy Kid',cat:'Books',price:1.00,icon:'📘',rating:5,sale:false,stock:1,desc:'Diary of a Wimpy Kid.'},
+{id:2,name:'Dork Diaries',cat:'Books',price:1.00,icon:'📕',rating:5,sale:false,stock:1,desc:'Dork Diaries.'},
+{id:3,name:'Pokemon',cat:'Books',price:1.00,icon:'📗',rating:5,sale:false,stock:1,desc:'Pokemon.'},
+{id:4,name:'Scary Books',cat:'Books',price:1.00,icon:'📙',rating:5,sale:false,stock:1,desc:'Scary Books.'},
+{id:5,name:'Dictionary',cat:'Books',price:1.00,icon:'📚',rating:5,sale:false,stock:1,desc:'Dictionary.'},
+{id:6,name:'The Bad Guys',cat:'Books',price:1.00,icon:'📖',rating:5,sale:false,stock:1,desc:'The Bad Guys.'},
+{id:7,name:'300 Page Book',cat:'Books',price:1.00,icon:'📚',rating:5,sale:false,stock:1,desc:'300 Page Book.'},
+{id:8,name:'200 Page Book',cat:'Books',price:1.00,icon:'📚',rating:5,sale:false,stock:1,desc:'200 Page Book.'},
+{id:9,name:'100 Page Book',cat:'Books',price:1.00,icon:'📖',rating:5,sale:false,stock:1,desc:'100 Page Book.'},
+{id:10,name:'Mike and Ike',cat:'Candy',price:3.00,icon:'🍬',rating:5,sale:false,stock:5,desc:'Mike and Ike.'},
+{id:11,name:'Skittles',cat:'Candy',price:3.00,icon:'🌈',rating:5,sale:false,stock:5,desc:'Skittles.'},
+{id:12,name:'Sour Patch',cat:'Candy',price:3.00,icon:'🍬',rating:5,sale:false,stock:5,desc:'Sour Patch.'},
+{id:13,name:'Nerds',cat:'Candy',price:3.00,icon:'🍭',rating:5,sale:false,stock:5,desc:'Nerds.'},
+{id:14,name:'Nerds Gummy Clusters',cat:'Candy',price:3.00,icon:'🍬',rating:5,sale:false,stock:5,desc:'Nerds Gummy Clusters.'},
+{id:15,name:"Welch's",cat:'Candy',price:3.00,icon:'🍇',rating:5,sale:false,stock:5,desc:"Welch's."},
+{id:16,name:'Skittles Gummy',cat:'Candy',price:3.00,icon:'🌈',rating:5,sale:false,stock:5,desc:'Skittles Gummy.'},
+{id:17,name:'Ice Breakers',cat:'Candy',price:6.50,icon:'🍬',rating:5,sale:false,stock:5,desc:'Ice Breakers.'},
+{id:18,name:'Sour Ice Breakers',cat:'Candy',price:6.50,icon:'🍬',rating:5,sale:false,stock:5,desc:'Sour Ice Breakers.'},
+{id:19,name:'Duo Ice Breakers',cat:'Candy',price:6.50,icon:'🍬',rating:5,sale:false,stock:5,desc:'Duo Ice Breakers.'},
+{id:20,name:'Milky Way',cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:'Milky Way.'},
+{id:21,name:'Hershey',cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:'Hershey.'},
+{id:22,name:"M&M's",cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:"M&M's."},
+{id:23,name:'Snickers',cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:'Snickers.'},
+{id:24,name:'Godiva',cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:'Godiva.'},
+{id:25,name:'Pocky Sticks',cat:'Candy',price:3.00,icon:'🍫',rating:5,sale:false,stock:5,desc:'Pocky Sticks.'},
+{id:26,name:'Takis',cat:'Chips',price:3.00,icon:'🌶️',rating:5,sale:false,stock:5,desc:'Takis.'},
+{id:27,name:'Doritos',cat:'Chips',price:3.00,icon:'🔺',rating:5,sale:false,stock:5,desc:'Doritos.'},
+{id:28,name:'Pringles',cat:'Chips',price:3.00,icon:'🥔',rating:5,sale:false,stock:5,desc:'Pringles.'},
+{id:29,name:"Lay's",cat:'Chips',price:3.00,icon:'🥔',rating:5,sale:false,stock:5,desc:"Lay's."},
+{id:30,name:'Ruffles',cat:'Chips',price:3.00,icon:'🥔',rating:5,sale:false,stock:5,desc:'Ruffles.'},
+{id:31,name:'Cheetos',cat:'Chips',price:3.00,icon:'🧀',rating:5,sale:false,stock:5,desc:'Cheetos.'},
+{id:32,name:'Cheeto Puffs',cat:'Chips',price:3.00,icon:'🧀',rating:5,sale:false,stock:5,desc:'Cheeto Puffs.'},
+{id:33,name:'Onion Rings',cat:'Chips',price:3.00,icon:'⭕',rating:5,sale:false,stock:5,desc:'Onion Rings.'},
+{id:34,name:'Fritos',cat:'Chips',price:3.00,icon:'🥨',rating:5,sale:false,stock:5,desc:'Fritos.'},
+{id:35,name:'Popcorn',cat:'Chips',price:3.00,icon:'🍿',rating:5,sale:false,stock:5,desc:'Popcorn.'},
+{id:36,name:'Cake',cat:'Heavenly Sweets',price:4.50,icon:'🍰',rating:5,sale:false,stock:5,desc:'Cake.'},
+{id:37,name:'Donuts',cat:'Heavenly Sweets',price:4.50,icon:'🍩',rating:5,sale:false,stock:5,desc:'Donuts.'},
+{id:38,name:'Croissants',cat:'Heavenly Sweets',price:4.50,icon:'🥐',rating:5,sale:false,stock:5,desc:'Croissants.'},
+{id:39,name:'Muffins',cat:'Heavenly Sweets',price:4.50,icon:'🧁',rating:5,sale:false,stock:5,desc:'Muffins.'},
+{id:40,name:'Cupcakes',cat:'Heavenly Sweets',price:4.50,icon:'🧁',rating:5,sale:false,stock:5,desc:'Cupcakes.'},
+{id:41,name:'Bread',cat:'Heavenly Sweets',price:4.50,icon:'🍞',rating:5,sale:false,stock:5,desc:'Bread.'},
+{id:42,name:'Banana Bread',cat:'Heavenly Sweets',price:4.50,icon:'🍌',rating:5,sale:false,stock:5,desc:'Banana Bread.'},
+{id:43,name:'Watermelon Gum',cat:'Gum',price:0.50,icon:'🍉',rating:5,sale:false,stock:10,desc:'Watermelon flavored gum.'},
+{id:44,name:'Spearmint Gum',cat:'Gum',price:0.50,icon:'🌿',rating:5,sale:false,stock:10,desc:'Spearmint flavored gum.'},
+{id:45,name:'Polar Ice Gum',cat:'Gum',price:0.50,icon:'❄️',rating:5,sale:false,stock:10,desc:'Polar Ice flavored gum.'}
+];
+
+const STORAGE={products:"jollieshop_products_v3",cart:"jollieshop_cart_v3",orders:"jollieshop_orders_v3",user:"jollieshop_user_v3",dark:"jollieshop_dark_v3"};
+function load(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}}
+let products=load(STORAGE.products,null);
+if(!Array.isArray(products)) products=JSON.parse(JSON.stringify(defaultProducts));
+defaultProducts.forEach(dp=>{if(!products.some(p=>Number(p.id)===Number(dp.id)))products.push(JSON.parse(JSON.stringify(dp)))});
+products.forEach(p=>{p.stock=Math.max(0,Number.isFinite(Number(p.stock))?Math.floor(Number(p.stock)):0);p.price=Math.max(0,Number(p.price)||0)});
+let cartData=load(STORAGE.cart,[]);
+let ordersData=load(STORAGE.orders,[]);
+let user=load(STORAGE.user,null);
+let discountRate=0;
+let current=[...products];
+function save(){localStorage.setItem(STORAGE.products,JSON.stringify(products));localStorage.setItem(STORAGE.cart,JSON.stringify(cartData));localStorage.setItem(STORAGE.orders,JSON.stringify(ordersData));if(user)localStorage.setItem(STORAGE.user,JSON.stringify(user));}
+
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function stars(n){n=Math.max(0,Math.min(5,Number(n)||0));return "★".repeat(n)+"☆".repeat(5-n)}
+function render(list=current){const box=document.getElementById("products");box.innerHTML="";if(!list.length){box.innerHTML="<p>No products found.</p>";return}list.forEach(p=>{const stock=Math.max(0,Number(p.stock)||0);box.innerHTML+=`<div class="product">${p.sale?'<div class="sale">SALE</div>':''}<div class="product-image"><div class="emoji">${esc(p.icon)}</div></div><div class="product-category">${esc(p.cat)}</div><h3>${esc(p.name)}</h3><div class="rating">${stars(p.rating)}</div><div class="price">$${Number(p.price).toFixed(2)}</div><button class="add" onclick="add(${Number(p.id)})" ${stock<=0?'disabled':''}>${stock>0?'Add to Cart':'Sold Out'}</button><small style="display:block;margin-top:8px;color:var(--muted)">In stock: ${stock}</small><button class="view" onclick="productPage(${Number(p.id)})">View Product</button></div>`})}
+
+function add(id){const p=products.find(x=>Number(x.id)===Number(id));if(!p)return;const stock=Math.max(0,Number(p.stock)||0);const item=cartData.find(x=>Number(x.id)===Number(id));const qty=item?Number(item.qty):0;if(stock<=0)return toast(p.name+" is sold out.");if(qty>=stock)return toast("Only "+stock+" available for "+p.name+".");if(item)item.qty=qty+1;else cartData.push({id:Number(p.id),qty:1});save();cartRender();updateCheckout();toast(p.name+" added to cart!")}
+
+function cartRender(){const box=document.getElementById("cartItems");box.innerHTML="";let total=0,count=0;cartData=cartData.filter(i=>{const p=products.find(x=>Number(x.id)===Number(i.id));if(!p)return false;const stock=Math.max(0,Number(p.stock)||0);i.qty=Math.min(Math.max(0,Number(i.qty)||0),stock);return i.qty>0});cartData.forEach(i=>{const p=products.find(x=>Number(x.id)===Number(i.id));const stock=Math.max(0,Number(p.stock)||0);total+=Number(p.price)*i.qty;count+=i.qty;box.innerHTML+=`<div class="cart-item"><div class="cart-icon">${esc(p.icon)}</div><div class="cart-info"><b>${esc(p.name)}</b><p>$${Number(p.price).toFixed(2)}</p><div class="qty"><button onclick="changeQty(${Number(p.id)},-1)">−</button><span>${i.qty}</span><button onclick="changeQty(${Number(p.id)},1)" ${i.qty>=stock?'disabled':''}>+</button><button onclick="removeItem(${Number(p.id)})">🗑️</button></div></div></div>`});if(!cartData.length)box.innerHTML="<p>Your cart is empty.</p>";document.getElementById("cartTotal").textContent="$"+total.toFixed(2);document.getElementById("count").textContent=count;save()}
+function changeQty(id,n){const item=cartData.find(x=>Number(x.id)===Number(id));const p=products.find(x=>Number(x.id)===Number(id));if(!item||!p)return;const next=Number(item.qty)+Number(n);const stock=Math.max(0,Number(p.stock)||0);if(next<=0)return removeItem(id);if(next>stock)return toast("Only "+stock+" available for "+p.name+".");item.qty=next;save();cartRender();updateCheckout()}
+function removeItem(id){cartData=cartData.filter(x=>Number(x.id)!==Number(id));save();cartRender();updateCheckout()}
+
+function cartOpen(){
+ document.getElementById("cart").style.display="block";
+ document.getElementById("overlay").style.display="block";
+}
+
+function cartClose(){
+ document.getElementById("cart").style.display="none";
+ document.getElementById("overlay").style.display="none";
+}
+
+function checkout(){
+ if(!cartData.length){
+  toast("Your cart is empty!");
+  return;
+ }
+
+ cartClose();
+ document.getElementById("checkout").style.display="block";
+ document.getElementById("detail").style.display="none";
+ document.getElementById("checkout").scrollIntoView({behavior:"smooth"});
+ updateCheckout();
+}
+
+function updateCheckout(){const box=document.getElementById("checkoutItems");if(!box)return;box.innerHTML="";let subtotal=0;cartData.forEach(i=>{const p=products.find(x=>Number(x.id)===Number(i.id));if(!p)return;const amount=Number(p.price)*Number(i.qty);subtotal+=amount;box.innerHTML+=`<div class="row"><span>${esc(p.icon)} ${esc(p.name)} × ${Number(i.qty)}</span><span>$${amount.toFixed(2)}</span></div>`});const membership=document.getElementById("membership")?.value==="yes";const fee=membership?5:0;const discount=subtotal*discountRate;const total=Math.max(0,subtotal-discount+fee);document.getElementById("sub").textContent="$"+subtotal.toFixed(2);document.getElementById("disc").textContent="-$"+discount.toFixed(2);document.getElementById("membershipSummary").textContent=membership?"⭐ Membership: $5.00":"⭐ Membership: Not selected";document.getElementById("total").textContent="$"+total.toFixed(2)}
+
+function coupon(){
+ const code=document.getElementById("coupon").value.trim().toUpperCase();
+ const msg=document.getElementById("couponMsg");
+
+ if(code==="JOLLIE10"){
+  discountRate=.10;
+  msg.textContent="✅ 10% discount applied!";
+  msg.style.color="green";
+ }else{
+  discountRate=0;
+  msg.textContent="❌ Invalid coupon code.";
+  msg.style.color="red";
+ }
+
+ updateCheckout();
+}
+
+function payment(){
+ const value=document.getElementById("payment").value;
+
+ document.getElementById("card").style.display="none";
+ document.getElementById("cash").style.display="none";
+
+ if(value==="card")document.getElementById("card").style.display="block";
+ if(value==="cash")document.getElementById("cash").style.display="block";
+}
+
+function placeOrder(){if(!cartData.length)return toast("Your cart is empty!");const name=document.getElementById("name").value.trim();const studentClass=document.getElementById("studentClass").value.trim();const membership=document.getElementById("membership").value==="yes";const method=document.getElementById("payment").value;if(!name||!studentClass)return alert("Please enter your name and class.");if(!method)return alert("Please select a payment method.");let subtotal=0;const items=[];for(const i of cartData){const p=products.find(x=>Number(x.id)===Number(i.id));const qty=Number(i.qty);if(!p||!Number.isInteger(qty)||qty<1||qty>Number(p.stock))return alert("Sorry, "+(p?p.name:"one of your items")+" does not have enough stock.");subtotal+=Number(p.price)*qty;items.push({id:Number(p.id),name:p.name,price:Number(p.price),qty})}const discount=subtotal*discountRate;const membershipFee=membership?5:0;const total=Math.max(0,subtotal-discount+membershipFee);const orderId="JS"+Date.now()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();items.forEach(i=>{const p=products.find(x=>Number(x.id)===Number(i.id));p.stock=Math.max(0,Number(p.stock)-i.qty)});ordersData.unshift({id:orderId,date:new Date().toLocaleString(),name,studentClass,membership,membershipFee,coupon:discountRate?"JOLLIE10":"",discount,payment:method,subtotal,total,items});const emailLines=items.map(i=>i.name+" x "+i.qty+" - $"+(i.price*i.qty).toFixed(2)).join("\n");save();cartData=[];discountRate=0;save();cartRender();render();updateCheckout();document.getElementById("coupon").value="";document.getElementById("couponMsg").textContent="";document.getElementById("membership").value="no";const subject=encodeURIComponent("JollieShop New Order "+orderId);const body=encodeURIComponent("New JollieShop order\n\nOrder ID: "+orderId+"\nDate: "+new Date().toLocaleString()+"\nCustomer: "+name+"\nClass: "+studentClass+"\nMembership: "+(membership?"Yes ($5.00)":"No")+"\nPayment: "+method+"\nCoupon: "+(discountRate?"JOLLIE10 (10%)":"None")+"\nDiscount: $"+discount.toFixed(2)+"\n\nItems:\n"+emailLines+"\n\nSubtotal: $"+subtotal.toFixed(2)+"\nMembership: $"+membershipFee.toFixed(2)+"\nTotal: $"+total.toFixed(2));alert("🎉 Order placed! Your email app will open with the order details.");window.location.href="mailto:baarnankauraalt@gmail.com?subject="+subject+"&body="+body;document.getElementById("checkout").style.display="none";window.scrollTo({top:0,behavior:"smooth"})}
+
+function productPage(id){const p=products.find(x=>Number(x.id)===Number(id));if(!p)return;document.getElementById("productsSection").style.display="none";document.getElementById("detail").style.display="block";document.getElementById("checkout").style.display="none";const stock=Math.max(0,Number(p.stock)||0);document.getElementById("detail").innerHTML=`<button onclick="home()" style="padding:10px;margin-bottom:15px">← Back to Store</button><div class="detail-box"><div><div class="detail-image"><div class="detail-emoji">${esc(p.icon)}</div></div></div><div><div class="product-category">${esc(p.cat)}</div><h1>${esc(p.name)}</h1><div class="rating">${stars(p.rating)}</div><div class="detail-price">$${Number(p.price).toFixed(2)}</div><p class="detail-desc">${esc(p.desc)}</p><p>In stock: ${stock}</p><button class="add" onclick="add(${Number(p.id)})" ${stock<=0?'disabled':''}>${stock>0?'Add to Cart':'Sold Out'}</button><div class="reviews"><h2>⭐ Customer Reviews</h2><div class="review">★★★★★ Great product!</div><div class="review">★★★★☆ Would buy again.</div></div></div></div>`;window.scrollTo({top:0,behavior:"smooth"})}
+
+function category(cat){
+ current=products.filter(p=>p.cat===cat);
+ document.getElementById("title").textContent=cat;
+ document.getElementById("productsSection").style.display="block";
+ document.getElementById("detail").style.display="none";
+ document.getElementById("checkout").style.display="none";
+ render();
+ scrollProducts();
+}
+
+function searchProducts(){
+ const q=document.getElementById("search").value.toLowerCase();
+
+ current=products.filter(p=>
+  p.name.toLowerCase().includes(q)||
+  p.cat.toLowerCase().includes(q)
+ );
+
+ document.getElementById("title").textContent=
+ q?'Search results for "'+q+'"':"Popular Products";
+
+ render();
+}
+
+function sort(type){
+ let x=[...current];
+
+ if(type==="low")x.sort((a,b)=>a.price-b.price);
+ if(type==="high")x.sort((a,b)=>b.price-a.price);
+ if(type==="name")x.sort((a,b)=>a.name.localeCompare(b.name));
+
+ render(x);
+}
+
+function home(){
+ current=[...products];
+ document.getElementById("title").textContent="Popular Products";
+ document.getElementById("search").value="";
+ document.getElementById("productsSection").style.display="block";
+ document.getElementById("detail").style.display="none";
+ document.getElementById("checkout").style.display="none";
+ render();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function scrollProducts(){
+ document.getElementById("productsSection").scrollIntoView({behavior:"smooth"});
+}
+
+function dark(){
+ document.body.classList.toggle("dark");
+ localStorage.setItem(
+  "dark",
+  document.body.classList.contains("dark")
+ );
+}
+
+if(localStorage.getItem(STORAGE.dark)==="true"){
+ document.body.classList.add("dark");
+}
+
+function account(){
+ document.getElementById("accountModal").style.display="flex";
+
+ if(user){
+  document.getElementById("accountStatus").innerHTML=
+   "✅ Signed in as <b>"+user.username+"</b>";
+ }
+}
+
+function login(){
+ const username=document.getElementById("username").value.trim();
+ const email=document.getElementById("email").value.trim();
+
+ if(!username||!email){
+  alert("Please enter a username and email.");
+  return;
+ }
+
+ user={username,email};
+ localStorage.setItem(STORAGE.user,JSON.stringify(user));
+
+ document.getElementById("accountStatus").innerHTML=
+  "✅ Welcome, <b>"+username+"</b>!";
+}
+
+function orders(){document.getElementById("ordersModal").style.display="flex";const box=document.getElementById("orderList");box.innerHTML="";if(!ordersData.length){box.innerHTML="<p>You haven't placed any orders yet.</p>";return}ordersData.forEach(o=>{const items=(o.items||[]).map(i=>`${esc(i.name||("Product #"+i.id))} × ${Number(i.qty)} — $${(Number(i.price)*Number(i.qty)).toFixed(2)}`).join("<br>");box.innerHTML+=`<div class="order"><b>Order #${esc(o.id)}</b><p>${esc(o.date)}</p><p>Name: ${esc(o.name||"N/A")}</p><p>Class: ${esc(o.studentClass||"N/A")}</p><p>Membership: ${o.membership?"Yes — $5.00":"No"}</p><p>Payment: ${esc(o.payment||"N/A")}</p><p>Items:<br>${items||"None"}</p><strong>$${Number(o.total||0).toFixed(2)}</strong></div>`})}
+
+function closeModal(id){
+ document.getElementById(id).style.display="none";
+}
+
+function addProduct(){
+ const name=document.getElementById("adminName").value.trim();
+ const price=parseFloat(document.getElementById("adminPrice").value);
+ const cat=document.getElementById("adminCategory").value;
+ const icon=document.getElementById("adminIcon").value||"📦";
+
+ if(!name||isNaN(price)){
+  alert("Enter a product name and price.");
+  return;
+ }
+
+ products.push({
+  id:Date.now(),
+  name,
+  cat,
+  price,
+  icon,
+  rating:5,
+  sale:false,
+  desc:"New JollieShop product."
+ });
+
+ save();
+ current=[...products];
+ render();
+
+ document.getElementById("adminName").value="";
+ document.getElementById("adminPrice").value="";
+ document.getElementById("adminIcon").value="";
+
+ toast("Product added!");
+}
+
+
+function adminLogin(){
+  const password=prompt("Enter admin password:");
+  if(password!=="JollieShop-Admin"){
+    if(password!==null)alert("❌ Incorrect admin password.");
+    return;
+  }
+  showAdmin();
+}
+
+function showAdmin(){document.getElementById("admin").style.display="block";document.getElementById("productsSection").style.display="none";document.getElementById("detail").style.display="none";document.getElementById("checkout").style.display="none";const box=document.getElementById("adminOrders");box.innerHTML="";let sales=0;ordersData.forEach(o=>{sales+=Number(o.total)||0;const items=(o.items||[]).map(i=>`${esc(i.name||("Product #"+i.id))} × ${Number(i.qty)} — $${(Number(i.price)*Number(i.qty)).toFixed(2)}`).join("<br>");box.innerHTML+=`<div class="order"><h3>Order #${esc(o.id)}</h3><p><b>Date:</b> ${esc(o.date||"N/A")}</p><p><b>Name:</b> ${esc(o.name||"N/A")}</p><p><b>Class:</b> ${esc(o.studentClass||"N/A")}</p><p><b>Membership:</b> ${o.membership?"Yes — $5.00":"No"}</p><p><b>Payment:</b> ${esc(o.payment||"N/A")}</p><p><b>Items:</b><br>${items||"None"}</p><p><b>Subtotal:</b> $${Number(o.subtotal||0).toFixed(2)}</p><p><b>Discount:</b> -$${Number(o.discount||0).toFixed(2)}</p><p><strong>Total: $${Number(o.total||0).toFixed(2)}</strong></p></div>`});if(!ordersData.length)box.innerHTML="<p>No orders have been placed yet.</p>";box.innerHTML=`<div class="order"><h2>📊 Sales Summary</h2><p><b>Total Orders:</b> ${ordersData.length}</p><p><b>Total Sales:</b> $${sales.toFixed(2)}</p></div>`+box.innerHTML;window.scrollTo({top:0,behavior:"smooth"})}
+
+function toast(message){
+ const t=document.getElementById("toast");
+ t.textContent=message;
+ t.style.display="block";
+
+ setTimeout(()=>{
+  t.style.display="none";
+ },2500);
+}
+
+render();
+cartRender();
+updateCheckout();
+
+</script>
+
+</body>
+</html>
